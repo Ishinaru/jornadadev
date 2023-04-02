@@ -1,36 +1,47 @@
-import './App.css';
-import Video from './pages/Video'
-import clip0 from "./pages/videos/scoott.mp4"
-import clip1 from "./pages/videos/mrbeen.mp4"  
-
+import "./App.css";
+import React, { useEffect, useState } from "react";
+import Video from "./pages/Video";
+import db from "./config/firebase";
+import { collection, getDocs } from "firebase/firestore/lite";
+//import clip0 from "./pages/videos/scoott.mp4";
+//import clip1 from "./pages/videos/mrbeen.mp4";
 
 function App() {
-  
-  return (
-    <div className="App">
-      <div className='app__videos'>
-        
-        <Video 
-          likes={100}
-          messages={200}
-          shares={300}
-          name="David 1"
-          description="Michael Scott, the office"
-          music="epic music"
-          clip={clip0}
-        />
+  let maxHeight;
+  if(window.innerHeight <= 800){
+    maxHeight = window.innerHeight;
+  }
 
-        <Video 
-          likes={1000}
-          messages={200}
-          shares={300}
-          name="David 2"
-          description="Mr Bean, tranquilão"
-          music="musica boa, musica maneirona"
-          clip={clip1}
-        />
-        
-      </div>      
+  const [video, setVideos] = useState([])
+
+  async function getVideos() {
+    const videosCollection = collection(db, "videos");
+    const videosSnapshot = await getDocs(videosCollection);
+    const videosList = videosSnapshot.docs.map(doc => doc.data());
+    setVideos(videosList);
+  }
+
+  useEffect(()=>{
+    getVideos();
+  }, []);
+
+  return (
+    <div className="App" style={{maxHeight: maxHeight + "px"}}>
+      <div className="app__videos">
+        {video.map((item)=> {
+          return (
+            <Video
+              likes={item.likes}
+              messages={item.messages}
+              shares={item.shares}
+              name={item.name}
+              description={item.description}
+              music={item.music}
+              url={item.url}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
